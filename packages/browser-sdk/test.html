@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Telemetry - Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    h1 { color: #333; }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #45a049; }
+    button.error { background: #f44336; }
+    button.error:hover { background: #da190b; }
+    .section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .status {
+      padding: 10px;
+      background: #e3f2fd;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Claude Telemetry Test Page</h1>
+
+  <div class="status">
+    <strong>Status:</strong> <span id="status">Initializing...</span>
+  </div>
+
+  <div class="section">
+    <h2>Network Events</h2>
+    <p>Test network request capture:</p>
+    <button onclick="testSuccessfulRequest()">✓ Successful Request (200)</button>
+    <button onclick="testFailedRequest()" class="error">✗ Failed Request (500)</button>
+    <button onclick="testNotFound()" class="error">✗ Not Found (404)</button>
+  </div>
+
+  <div class="section">
+    <h2>Console Events</h2>
+    <p>Test console capture:</p>
+    <button onclick="console.log('Test log message')">console.log()</button>
+    <button onclick="console.warn('Test warning message')">console.warn()</button>
+    <button onclick="console.error('Test error message')">console.error()</button>
+  </div>
+
+  <div class="section">
+    <h2>Error Events</h2>
+    <p>Test error capture:</p>
+    <button onclick="throwError()" class="error">Throw Error</button>
+    <button onclick="throwPromiseError()" class="error">Unhandled Promise Rejection</button>
+  </div>
+
+  <div class="section">
+    <h2>Custom Events</h2>
+    <p>Test manual event capture:</p>
+    <button onclick="captureCustomEvent()">Capture Custom Event</button>
+  </div>
+
+  <div class="section">
+    <h2>Query Telemetry</h2>
+    <p>Check what's been captured:</p>
+    <button onclick="queryTelemetry()">Query Last 5 Minutes</button>
+    <pre id="results" style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; max-height: 400px; overflow-y: auto;"></pre>
+  </div>
+
+  <!-- Load SDK from server -->
+  <script src="http://localhost:7357/sdk"></script>
+
+  <!-- Initialize -->
+  <script>
+    ClaudeTelemetry.init({
+      session: 'test-session-' + Date.now(),
+      endpoint: 'http://localhost:7357/events'
+    });
+
+    document.getElementById('status').textContent = 'SDK loaded! Session: ' + ClaudeTelemetry.config.session;
+    document.getElementById('status').style.color = 'green';
+  </script>
+
+  <!-- Test functions -->
+  <script>
+    function testSuccessfulRequest() {
+      fetch('https://jsonplaceholder.typicode.com/posts/1')
+        .then(response => response.json())
+        .then(data => {
+          console.log('Successful request:', data);
+          alert('Check the browser console and telemetry!');
+        });
+    }
+
+    function testFailedRequest() {
+      fetch('https://httpstat.us/500')
+        .then(response => {
+          console.log('Got response with status:', response.status);
+          alert('500 error captured!');
+        });
+    }
+
+    function testNotFound() {
+      fetch('https://httpstat.us/404')
+        .then(response => {
+          console.log('Got response with status:', response.status);
+          alert('404 error captured!');
+        });
+    }
+
+    function throwError() {
+      throw new Error('This is a test error!');
+    }
+
+    function throwPromiseError() {
+      Promise.reject(new Error('This is an unhandled promise rejection!'));
+    }
+
+    function captureCustomEvent() {
+      ClaudeTelemetry.capture('custom', {
+        action: 'button_click',
+        component: 'test_page',
+        timestamp: new Date().toISOString()
+      });
+      alert('Custom event captured!');
+    }
+
+    function queryTelemetry() {
+      fetch('http://localhost:7357/context?session=' + ClaudeTelemetry.config.session + '&since=5m')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('results').textContent = 'Error: ' + err.message + '\n\nMake sure the telemetry server is running on localhost:7357';
+        });
+    }
+  </script>
+</body>
+</html>

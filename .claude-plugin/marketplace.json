@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "runtime-vision-marketplace",
+  "version": "0.2.0",
+  "description": "Runtime Vision - Real-time browser telemetry for Claude Code debugging",
+  "owner": {
+    "name": "Blake Yoder",
+    "email": "me@blakeyoder.com"
+  },
+  "plugins": [
+    {
+      "name": "runtime-vision",
+      "description": "Real-time browser telemetry for Claude Code debugging",
+      "version": "0.2.0-beta",
+      "author": {
+        "name": "Blake Yoder",
+        "email": "me@blakeyoder.com"
+      },
+      "source": "./",
+      "category": "development"
+    }
+  ]
+}
