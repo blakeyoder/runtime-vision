@@ -12,6 +12,9 @@ SERVER_PATH="$PLUGIN_ROOT/servers/http-server.js"
 PID_FILE="$HOME/.claude/runtime-vision-server.pid"
 LOG_FILE="$HOME/.claude/runtime-vision-server.log"
 
+# Use the same port logic as the server
+PORT="${RUNTIME_VISION_PORT:-7357}"
+
 # Check if server is already running by PID file
 if [ -f "$PID_FILE" ]; then
   PID=$(cat "$PID_FILE")
@@ -27,10 +30,10 @@ fi
 
 # Check if port is already in use (server might be running without PID file)
 # This handles cases where PID file was deleted but server is still running
-if lsof -i :7357 -sTCP:LISTEN -t >/dev/null 2>&1; then
-  echo "Runtime Vision telemetry server already running on port 7357"
+if lsof -i :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+  echo "Runtime Vision telemetry server already running on port $PORT"
   # Try to recover PID file for future checks
-  RUNNING_PID=$(lsof -i :7357 -sTCP:LISTEN -t 2>/dev/null | head -1)
+  RUNNING_PID=$(lsof -i :$PORT -sTCP:LISTEN -t 2>/dev/null | head -1)
   if [ -n "$RUNNING_PID" ]; then
     echo "$RUNNING_PID" > "$PID_FILE"
     echo "✅ Recovered PID: $RUNNING_PID"
@@ -58,7 +61,7 @@ sleep 1
 # Verify server is running
 if ps -p "$SERVER_PID" > /dev/null 2>&1; then
   echo "✅ Runtime Vision telemetry server started (PID: $SERVER_PID)"
-  echo "   Server running at http://localhost:7357"
+  echo "   Server running at http://localhost:$PORT"
   echo "   Logs: $LOG_FILE"
   exit 0
 else

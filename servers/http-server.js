@@ -12,7 +12,7 @@ const path = require('path');
 const eventStore = {};
 
 // Server configuration
-const PORT = process.env.RUNTIME_VISION_PORT || 7358;
+const PORT = process.env.RUNTIME_VISION_PORT || 7357;
 const HOST = '127.0.0.1';
 
 // Create HTTP server
